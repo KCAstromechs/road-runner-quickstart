@@ -24,7 +24,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "BLUE_TEST_AUTO_PIXEL", group = "Autonomous")
+@Autonomous(name = "AutoTest1", group = "Autonomous")
 public class AutoTest1 extends LinearOpMode {
 
     public class Lift {
@@ -50,9 +50,9 @@ public class AutoTest1 extends LinearOpMode {
         TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
                 // Whatever the heck we want to happen goes directly below
                 .lineToY(54)
-                .setTangent(Math.toRadians(0))
+                .turnTo(Math.toRadians(0))
                 .lineToX(45)
-                .setTangent(Math.toRadians(45))
+                .turnTo(Math.toRadians(45))
                 .waitSeconds(1);
         TrajectoryActionBuilder tab2 = drive.actionBuilder(initialPose)
                 .lineToY(37)
@@ -68,7 +68,8 @@ public class AutoTest1 extends LinearOpMode {
                 .strafeTo(new Vector2d(46, 30))
                 .waitSeconds(3);
         Action trajectoryActionCloseOut = tab1.fresh()
-                .strafeTo(new Vector2d(48, 12))
+//                .strafeTo(new Vector2d(48, 12))
+                .turn(Math.toRadians(360))
                 .build();
 
         // actions that need to happen on init; for instance, a claw tightening.
