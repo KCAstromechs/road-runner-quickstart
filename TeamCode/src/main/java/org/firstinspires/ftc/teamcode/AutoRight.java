@@ -25,8 +25,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "AutoTest1", group = "Autonomous")
-public class AutoTest1 extends LinearOpMode {
+@Autonomous(name = "AutoRight", group = "Autonomous")
+public class AutoRight extends LinearOpMode {
 
     public class Lift {
         private DcMotorEx lift;
@@ -41,7 +41,11 @@ public class AutoTest1 extends LinearOpMode {
     @Override
     public void runOpMode() { //throws InterruptedException
         // instantiate your MecanumDrive at a particular pose.
-        Pose2d initialPose = new Pose2d(35, 60, Math.toRadians(90));
+        double initialX = 0;
+        double initialY = 0;
+        double initialHeading = Math.toRadians(0);
+
+        Pose2d initialPose = new Pose2d(initialX, initialY, initialHeading);
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
 
@@ -52,11 +56,6 @@ public class AutoTest1 extends LinearOpMode {
 
         TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
                 // Whatever the heck we want to happen goes directly below
-                .strafeTo(new Vector2d(60, 36))
-                .strafeTo(new Vector2d(-60, 36))
-                .strafeTo(new Vector2d(-60, -38))
-                .strafeTo(new Vector2d(60, -38))
-                .strafeTo(new Vector2d(60, 36))
                 .waitSeconds(2);
         TrajectoryActionBuilder tab2 = drive.actionBuilder(initialPose)
                 .lineToY(37)
