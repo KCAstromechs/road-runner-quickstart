@@ -1,3 +1,5 @@
+// THIS IS MARK 2 CODE
+
 package org.firstinspires.ftc.teamcode;
 
 import static java.lang.Math.PI;
@@ -28,8 +30,8 @@ public class FieldCentricDrive extends LinearOpMode {
     private IMU imu;
 
     // Lift Motors
-    private DcMotor lift1;
-    private DcMotor lift2;
+    private DcMotor lift1; // low arm = lift1
+    private DcMotor lift2; // high arm = lift2
 
     // Grabber Servos
     private Servo grabber;
@@ -72,10 +74,28 @@ public class FieldCentricDrive extends LinearOpMode {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+//        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
         lift1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         lift2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // TODO lift1 might be high joint and NOT low joint
+        // Lift stuff
+        double lift_speed_limit1 = .5; // lift1 is low arm joint
+        double lift_speed_limit2 = .1; // lift2 is high arm joint
+
+        double lift1_minPos = -320.0; // highest point (up on robot)
+        double lift1_maxPos = 10.0; // lowest point (fwd on robot)
+
+        double lift1_power;
+        double lift2_power;
+
 
         Speed_percentage = 0.6;
         yawAngle = 0;
@@ -127,16 +147,9 @@ public class FieldCentricDrive extends LinearOpMode {
                 double rightFrontPower = (robotInputY + robotInputX + gamepad1.right_stick_x) * Speed_percentage;
                 double leftFrontPower = (robotInputY + -robotInputX + -gamepad1.right_stick_x) * Speed_percentage;
 
-
-                // TODO lift1 might be high joint and NOT low joint
-                // Lift stuff
-                double lift_speed_limit1 = 1; // lift1 is low arm joint
-                double lift_speed_limit2 = .5; // lift2 is high arm joint
-
-
-                double lift1_power = -gamepad2.right_stick_y;
-                double lift2_power = -gamepad2.left_stick_y;
-
+                // lift variables for optimization
+                double lift1_Pos = lift1.getCurrentPosition();
+                double lift2_Pos = lift2.getCurrentPosition();
 
                 // Telemetry
                 // Drive motor telemetry
@@ -146,8 +159,10 @@ public class FieldCentricDrive extends LinearOpMode {
                 telemetry.addData("Power of rightFront", rightFront.getPower());
 
                 // Lift telemetry
-                telemetry.addData("lift_power", lift1.getPower());
-                telemetry.addData("lift_position", lift1.getCurrentPosition());
+                telemetry.addData("lift1PWR", lift1.getPower());
+                telemetry.addData("lift1POS", lift1_Pos);
+                telemetry.addData("lift2PWR", lift2.getPower());
+                telemetry.addData("lift2POS", lift2_Pos);
 
                 // TODO change the comment right below this
                 /*
@@ -158,9 +173,10 @@ public class FieldCentricDrive extends LinearOpMode {
 
                 // Grabber telemetry
                 telemetry.addData("Position of grabber", grabber.getPosition());
-                telemetry.addData("Grabber status", "neutral");
 
-                // ------------------IF statements------------------
+                telemetry.addData("Position of Wrist", wrist.getPosition());
+
+                // ------------------------------ACTUAL MOVEMENT STUFF------------------------------
 
                 // BOOSTER BUTTON!!!!!
                 if (gamepad1.left_bumper || gamepad1.right_bumper) {
@@ -172,17 +188,34 @@ public class FieldCentricDrive extends LinearOpMode {
                 // GRABBER
                 // close grabber if either bumpers/ trigger is pressed
                 if (gamepad2.left_trigger >= .5 || gamepad2.right_trigger >= .5 || gamepad2.left_bumper || gamepad2.right_bumper) {
-                    grabber.setPosition(.07);
+                    grabber.setPosition(0.3675);
                     telemetry.addData("Grabber status", "closed");
                 } else { // open grabber when bumpers/ triggers are not pressed
-                    grabber.setPosition(.17);
+                    grabber.setPosition(0.2);
                     telemetry.addData("Grabber status", "open");
                 }
 
+                // WRIST
+                if (gamepad2.a) {
+                    wrist.setPosition(0);
+                } else {
+                    wrist.setPosition(0.5);
+                }
+
+
                 // LIFT CRAP
-                // TODO ADD LIMITERS
 
+                // Low arm limiter
+                if (lift1_Pos <= lift1_minPos && gamepad2.right_stick_y > 0 ){
+                    lift1_power = 0;
+                } else if (lift1_Pos >= lift1_maxPos && gamepad2.right_stick_y < 0) {
+                    lift1_power = 0;
+                } else {
+                    lift1_power = -gamepad2.right_stick_y;
+                }
 
+                // High arm power TODO add limiter?
+                lift2_power = -gamepad2.left_stick_y;
 
                 // SETTING POWERS
                 lift1.setPower(lift1_power * lift_speed_limit1);

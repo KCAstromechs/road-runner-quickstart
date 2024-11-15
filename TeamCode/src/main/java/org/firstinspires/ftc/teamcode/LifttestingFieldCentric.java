@@ -1,3 +1,6 @@
+//  THIS IS MARK 1 CODE... NO TOUCHY FOR NOW
+
+
 package org.firstinspires.ftc.teamcode;
 
 import static java.lang.Math.PI;
@@ -156,9 +159,9 @@ public class LifttestingFieldCentric extends LinearOpMode {
 
                 // grabber
                 if (gamepad2.a || gamepad2.left_trigger >= .5 || gamepad2.right_trigger >= .5 || gamepad2.left_bumper || gamepad2.right_bumper) {
-                    grabber.setPosition(.1); // close
+                    grabber.setPosition(0.5); // close
                 } else {
-                    grabber.setPosition(0); // open
+                    grabber.setPosition(0.25); // open
                 }
 
                 // BOOSTER BUTTON!!!!!
