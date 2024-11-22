@@ -17,8 +17,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name = "FieldCentricDrive (Java)")
-public class FieldCentricDrive extends LinearOpMode {
+@TeleOp(name = "m2FieldCentric (Java)")
+public class m2FieldCentric extends LinearOpMode {
 
     // Drive Motors
     private DcMotor leftBack;
@@ -82,15 +82,16 @@ public class FieldCentricDrive extends LinearOpMode {
 
         lift2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lift2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // use this if running by power
+//        lift2.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // use this if running by speed
 
         // TODO lift1 might be high joint and NOT low joint
         // Lift stuff
         double lift_speed_limit1 = .5; // lift1 is low arm joint
-        double lift_speed_limit2 = .1; // lift2 is high arm joint
+        double lift_speed_limit2 = .5; // lift2 is high arm joint (check if running by power or by speed.. if by speed, then limit = .1, else, then limit = .5
 
-        double lift1_minPos = -320.0; // highest point (up on robot)
+        double lift1_abs_minPos = -450.0; // this is the ABSOLUTE highest point the low arm will go
+        double lift1_minPos = -350.0; // highest point (up on robot)
         double lift1_maxPos = 10.0; // lowest point (fwd on robot)
 
         double lift1_power;
@@ -120,12 +121,6 @@ public class FieldCentricDrive extends LinearOpMode {
                 }
                 orientation = imu.getRobotYawPitchRollAngles();
 
-                // Booster Button!
-                if (gamepad1.right_bumper || gamepad1.left_bumper) {
-                    Speed_percentage = 1;
-                } else {
-                    Speed_percentage = 0.6;
-                }
 
                 yawAngle = orientation.getYaw(AngleUnit.RADIANS);
 
@@ -188,7 +183,7 @@ public class FieldCentricDrive extends LinearOpMode {
                 // GRABBER
                 // close grabber if either bumpers/ trigger is pressed
                 if (gamepad2.left_trigger >= .5 || gamepad2.right_trigger >= .5 || gamepad2.left_bumper || gamepad2.right_bumper) {
-                    grabber.setPosition(0.3675);
+                    grabber.setPosition(0.375);
                     telemetry.addData("Grabber status", "closed");
                 } else { // open grabber when bumpers/ triggers are not pressed
                     grabber.setPosition(0.2);
@@ -197,9 +192,11 @@ public class FieldCentricDrive extends LinearOpMode {
 
                 // WRIST
                 if (gamepad2.a) {
-                    wrist.setPosition(0);
-                } else {
-                    wrist.setPosition(0.5);
+                    wrist.setPosition(0); // the let go position for high
+                } else if (gamepad2.b) {
+                    wrist.setPosition(0.29); // the floor position
+                } else if (gamepad2.x) {
+                    wrist.setPosition(1); // the start position (honestly we will never use it)
                 }
 
 
@@ -214,8 +211,15 @@ public class FieldCentricDrive extends LinearOpMode {
                     lift1_power = -gamepad2.right_stick_y;
                 }
 
-                // High arm power TODO add limiter?
+                // High arm power
                 lift2_power = -gamepad2.left_stick_y;
+
+                // High arm power limiter
+                if (gamepad2.left_stick_y > 0) {
+                    lift_speed_limit2 = 1;
+                } else if (gamepad2.left_stick_y < 0) {
+                    lift_speed_limit2 = 0.5;
+                }
 
                 // SETTING POWERS
                 lift1.setPower(lift1_power * lift_speed_limit1);
