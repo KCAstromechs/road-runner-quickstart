@@ -91,7 +91,7 @@ public class m2FieldCentric extends LinearOpMode {
         double lift_speed_limit2 = .5; // lift2 is high arm joint (check if running by power or by speed.. if by speed, then limit = .1, else, then limit = .5
 
         double lift1_abs_minPos = -450.0; // this is the ABSOLUTE highest point the low arm will go
-        double lift1_minPos = -350.0; // highest point (up on robot)
+        double lift1_minPos = -340.0; // highest point (up on robot)
         double lift1_maxPos = 10.0; // lowest point (fwd on robot)
 
         double lift1_power;
@@ -194,7 +194,7 @@ public class m2FieldCentric extends LinearOpMode {
                 if (gamepad2.a) {
                     wrist.setPosition(0); // the let go position for high
                 } else if (gamepad2.b) {
-                    wrist.setPosition(0.29); // the floor position
+                    wrist.setPosition(0.27); // the floor position
                 } else if (gamepad2.x) {
                     wrist.setPosition(1); // the start position (honestly we will never use it)
                 }
@@ -202,21 +202,24 @@ public class m2FieldCentric extends LinearOpMode {
 
                 // LIFT CRAP
 
-                // Low arm limiter
-                if (lift1_Pos <= lift1_minPos && gamepad2.right_stick_y > 0 ){
-                    lift1_power = 0;
-                } else if (lift1_Pos >= lift1_maxPos && gamepad2.right_stick_y < 0) {
-                    lift1_power = 0;
-                } else {
-                    lift1_power = -gamepad2.right_stick_y;
-                }
+//                // Low arm limiter
+//                if (lift1_Pos <= lift1_minPos && gamepad2.right_stick_y < 0 ){
+//                    lift1_power = 0;
+//                } else if (lift1_Pos >= lift1_maxPos && gamepad2.right_stick_y > 0) {
+//                    lift1_power = 0;
+//                } else {
+//                    lift1_power = gamepad2.right_stick_y;
+//                }
+
+                // Low arm power
+                lift1_power = gamepad2.right_stick_y;
 
                 // High arm power
                 lift2_power = -gamepad2.left_stick_y;
 
                 // High arm power limiter
                 if (gamepad2.left_stick_y > 0) {
-                    lift_speed_limit2 = 1;
+                    lift_speed_limit2 = 0.51;
                 } else if (gamepad2.left_stick_y < 0) {
                     lift_speed_limit2 = 0.5;
                 }
