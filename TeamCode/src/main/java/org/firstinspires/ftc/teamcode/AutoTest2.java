@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Trajectory;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -54,10 +55,10 @@ public class AutoTest2 extends LinearOpMode {
 
 //      make a Grabber instance
         class Grabber {
-            private Servo servo;
+            private Servo grabber;
 
             public Grabber(HardwareMap hardwareMap) {
-                servo = hardwareMap.get(Servo.class, "grabber");
+                grabber = hardwareMap.get(Servo.class, "grabber");
             }
 
             public Action close_grabber() {
@@ -68,109 +69,111 @@ public class AutoTest2 extends LinearOpMode {
                     public boolean run(@NonNull TelemetryPacket packet) {
                         if (!initialized) {
                             // RUN CODE HERE
-                            servo.setPosition(0.5);
+                            grabber.setPosition(0.5);
                             initialized = true;
                         }
 
-                        double pos = servo.getPosition();
+                        double pos = grabber.getPosition();
                         packet.put("Grabber Pos", pos);
-                        return pos < 10_000.0;
+                        grabber_update(pos);
+                        return false; // if return true, bad bc stops other Actions from working
                     }
                 };
             }
 
             public Action open_grabber() {
                 return new Action() {
-                    private  boolean initialized = false;
+                    private boolean initialized = false;
 
                     @Override
                     public boolean run(@NonNull TelemetryPacket packet) {
                         if (!initialized) {
                             // RUN CODE HERE
-                            servo.setPosition(0.25);
+                            grabber.setPosition(0.25);
                             initialized = true;
                         }
 
-                        double pos = servo.getPosition();
+                        double pos = grabber.getPosition();
                         packet.put("Grabber Pos", pos);
-                        return pos < 10_000.0;
+                        grabber_update(pos);
+                        return false; // if return true, bad bc stops other Actions from working
                     }
                 };
             }
         }
 
-//        // make a Lift instance
-//        class Lift {
-//            private DcMotor lift;
-//
-//            public Lift(HardwareMap hardwareMap) {
-//                // Init the lift
-//                lift = hardwareMap.get(DcMotor.class, "lift");
-//                lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//                lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//                lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//            }
-//
-//            public Action lower_lift() {
-//                return new Action() {
-//                    private boolean initialized = false;
-//
-//                    @Override
-//                    public boolean run(@NonNull TelemetryPacket packet) {
-//                        if (!initialized) {
-//                            // RUN CODE HERE
-//                            // TODO change 0 to 'low' lift position
-//                            if (lift.getCurrentPosition() > 0) {
-//                                while (lift.getCurrentPosition() > 0) {
-//                                    lift.setPower(0.5);
-//                                }
-//                                lift.setPower(0);
-//                            } else if (lift.getCurrentPosition() < 0) {
-//                                while (lift.getCurrentPosition() < 0) {
-//                                    lift.setPower(-0.5);
-//                                }
-//                                lift.setPower(0);
-//                            }
-//                            initialized = true;
-//                        }
-//
-//                        double pos = lift.getCurrentPosition();
-//                        packet.put("Lift Pos", pos);
-//                        return pos < 10_000.0;
-//                    }
-//                };
-//            }
-//
-//            public Action raise_lift() {
-//                return new Action() {
-//                    private boolean initialized = false;
-//
-//                    @Override
-//                    public boolean run(@NonNull TelemetryPacket packet) {
-//                        if (!initialized) {
-//                            // RUN CODE HERE
-//                            // TODO change 0 to 'raised' lift position
-//                            if (lift.getCurrentPosition() > 0) {
-//                                while (lift.getCurrentPosition() > 0) {
-//                                    lift.setPower(0.5);
-//                                }
-//                                lift.setPower(0);
-//                            } else if (lift.getCurrentPosition() < 0) {
-//                                while (lift.getCurrentPosition() < 0) {
-//                                    lift.setPower(-0.5);
-//                                }
-//                                lift.setPower(0);
-//                            }
-//                            initialized = true;
-//                        }
-//
-//                        double pos = lift.getCurrentPosition();
-//                        packet.put("Lift Pos", pos);
-//                        return pos < 10_000.0;
-//                    }
-//                };
-//            }
-//        }
+        // make a Lift instance
+        class Lift {
+            private DcMotor lift;
+
+            public Lift(HardwareMap hardwareMap) {
+                // Init the lift
+                lift = hardwareMap.get(DcMotor.class, "lift");
+                lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
+
+            public Action lower_lift() {
+                return new Action() {
+                    private boolean initialized = false;
+
+                    @Override
+                    public boolean run(@NonNull TelemetryPacket packet) {
+                        if (!initialized) {
+                            // RUN CODE HERE
+                            // TODO change 0 to 'low' lift position
+                            if (lift.getCurrentPosition() > 0) {
+                                while (lift.getCurrentPosition() > 0) {
+                                    lift.setPower(0.5);
+                                }
+                                lift.setPower(0);
+                            } else if (lift.getCurrentPosition() < 0) {
+                                while (lift.getCurrentPosition() < 0) {
+                                    lift.setPower(-0.5);
+                                }
+                                lift.setPower(0);
+                            }
+                            initialized = true;
+                        }
+
+                        double pos = lift.getCurrentPosition();
+                        packet.put("Lift Pos", pos);
+                        return false; // if return true, bad bc stops other Actions from working
+                    }
+                };
+            }
+
+            public Action raise_lift() {
+                return new Action() {
+                    private boolean initialized = false;
+
+                    @Override
+                    public boolean run(@NonNull TelemetryPacket packet) {
+                        if (!initialized) {
+                            // RUN CODE HERE
+                            // TODO change 0 to 'raised' lift position
+                            if (lift.getCurrentPosition() > 0) {
+                                while (lift.getCurrentPosition() > 0) {
+                                    lift.setPower(0.5);
+                                }
+                                lift.setPower(0);
+                            } else if (lift.getCurrentPosition() < 0) {
+                                while (lift.getCurrentPosition() < 0) {
+                                    lift.setPower(-0.5);
+                                }
+                                lift.setPower(0);
+                            }
+                            initialized = true;
+                        }
+
+                        double pos = lift.getCurrentPosition();
+                        packet.put("Lift Pos", pos);
+                        return false; // if return true, bad bc stops other Actions from working
+                    }
+                };
+            }
+        }
 
 
         // vision here that outputs position
@@ -202,6 +205,8 @@ public class AutoTest2 extends LinearOpMode {
 
         Grabber grabber = new Grabber(hardwareMap);
 
+        Lift lift = new Lift(hardwareMap);
+
         // actions that need to happen on init; for instance, a claw tightening.
 //        Actions.runBlocking(claw.closeClaw());
 
@@ -230,10 +235,9 @@ public class AutoTest2 extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(
-                        grabber.close_grabber(),
-                        grabber.open_grabber(),
-                        grabber.open_grabber(),
-                        grabber.close_grabber()
+                        lift.raise_lift(),
+                        new SleepAction(1),
+                        lift.lower_lift()
                         //,
 //                        trajectoryActionCloseOut
                 )
@@ -245,4 +249,8 @@ public class AutoTest2 extends LinearOpMode {
         telemetry.update();
     }
 
+    private void grabber_update(double pos) {
+        telemetry.addData("Grabber Actual Pos: ", pos);
+        telemetry.update();
+    }
 }
