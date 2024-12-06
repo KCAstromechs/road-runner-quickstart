@@ -125,12 +125,12 @@ public class AutoTest2 extends LinearOpMode {
                             // TODO change 0 to 'low' lift position
                             if (lift.getCurrentPosition() > 0) {
                                 while (lift.getCurrentPosition() > 0) {
-                                    lift.setPower(0.5);
+                                    lift.setPower(-0.5);
                                 }
                                 lift.setPower(0);
                             } else if (lift.getCurrentPosition() < 0) {
                                 while (lift.getCurrentPosition() < 0) {
-                                    lift.setPower(-0.5);
+                                    lift.setPower(0.5);
                                 }
                                 lift.setPower(0);
                             }
@@ -153,14 +153,16 @@ public class AutoTest2 extends LinearOpMode {
                         if (!initialized) {
                             // RUN CODE HERE
                             // TODO change 0 to 'raised' lift position
-                            if (lift.getCurrentPosition() > 0) {
-                                while (lift.getCurrentPosition() > 0) {
-                                    lift.setPower(0.5);
+                            if (lift.getCurrentPosition() > 2000) {
+                                while (lift.getCurrentPosition() > 2000) {
+                                    lift.setPower(-0.5);
+                                    lift_update(lift.getCurrentPosition());
                                 }
                                 lift.setPower(0);
-                            } else if (lift.getCurrentPosition() < 0) {
-                                while (lift.getCurrentPosition() < 0) {
-                                    lift.setPower(-0.5);
+                            } else if (lift.getCurrentPosition() < 2000) {
+                                while (lift.getCurrentPosition() < 2000) {
+                                    lift.setPower(0.5);
+                                    lift_update(lift.getCurrentPosition());
                                 }
                                 lift.setPower(0);
                             }
@@ -236,8 +238,7 @@ public class AutoTest2 extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         lift.raise_lift(),
-                        new SleepAction(1),
-                        lift.lower_lift()
+                        new SleepAction(5)
                         //,
 //                        trajectoryActionCloseOut
                 )
@@ -251,6 +252,11 @@ public class AutoTest2 extends LinearOpMode {
 
     private void grabber_update(double pos) {
         telemetry.addData("Grabber Actual Pos: ", pos);
+        telemetry.update();
+    }
+
+    private void lift_update(double pos) {
+        telemetry.addData("Lift Actual Pos: ", pos);
         telemetry.update();
     }
 }

@@ -59,7 +59,7 @@ public class LifttestingFieldCentric extends LinearOpMode {
         // IMU
         imu = hardwareMap.get(IMU.class, "imu");
 
-        lift1 = hardwareMap.get(DcMotor.class, "lift1");
+        lift1 = hardwareMap.get(DcMotor.class, "lift");
 
         grabber = hardwareMap.get(Servo.class, "grabber");
 
