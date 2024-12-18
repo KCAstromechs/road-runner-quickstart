@@ -16,6 +16,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 
 // Non-RR imports
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -27,7 +28,8 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 import java.util.Vector;
 
 @Config
-@Autonomous(name = "AutoRight", group = "Autonomous")
+@Disabled
+@Autonomous(name = "AutoRight", preselectTeleOp = "TELELEOPTETESTING (Java)")
 public class AutoRight extends LinearOpMode {
 
 //    public class Lift {

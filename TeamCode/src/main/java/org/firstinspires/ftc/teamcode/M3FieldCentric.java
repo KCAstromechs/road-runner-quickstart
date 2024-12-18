@@ -18,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name = "FieldCentricDrive (Java)")
-public class FieldCentricDrive extends LinearOpMode {
+public class M3FieldCentric extends LinearOpMode {
 
     // Drive Motors
     private DcMotor leftBack;
@@ -30,8 +30,7 @@ public class FieldCentricDrive extends LinearOpMode {
     private IMU imu;
 
     // Lift Motors
-    private DcMotor lift1; // low arm = lift1
-    private DcMotor lift2; // high arm = lift2
+    private DcMotor lift;
 
     // Grabber Servos
     private Servo grabber;
@@ -65,8 +64,6 @@ public class FieldCentricDrive extends LinearOpMode {
         wrist = hardwareMap.get(Servo.class, "wrist");
 
         // Lift Motors
-        lift1 = hardwareMap.get(DcMotor.class, "lift1");
-        lift2 = hardwareMap.get(DcMotor.class, "lift2");
 
         // Motor Init shenanigans
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -76,14 +73,6 @@ public class FieldCentricDrive extends LinearOpMode {
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 //        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        lift1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        lift2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lift2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // TODO lift1 might be high joint and NOT low joint
         // Lift stuff
@@ -147,10 +136,6 @@ public class FieldCentricDrive extends LinearOpMode {
                 double rightFrontPower = (robotInputY + robotInputX + gamepad1.right_stick_x) * Speed_percentage;
                 double leftFrontPower = (robotInputY + -robotInputX + -gamepad1.right_stick_x) * Speed_percentage;
 
-                // lift variables for optimization
-                double lift1_Pos = lift1.getCurrentPosition();
-                double lift2_Pos = lift2.getCurrentPosition();
-
                 // Telemetry
                 // Drive motor telemetry
                 telemetry.addData("Power of leftBack", leftBack.getPower());
@@ -159,10 +144,7 @@ public class FieldCentricDrive extends LinearOpMode {
                 telemetry.addData("Power of rightFront", rightFront.getPower());
 
                 // Lift telemetry
-                telemetry.addData("lift1PWR", lift1.getPower());
-                telemetry.addData("lift1POS", lift1_Pos);
-                telemetry.addData("lift2PWR", lift2.getPower());
-                telemetry.addData("lift2POS", lift2_Pos);
+
 
                 // TODO change the comment right below this
                 /*
@@ -205,21 +187,12 @@ public class FieldCentricDrive extends LinearOpMode {
 
                 // LIFT CRAP
 
-                // Low arm limiter
-                if (lift1_Pos <= lift1_minPos && gamepad2.right_stick_y > 0 ){
-                    lift1_power = 0;
-                } else if (lift1_Pos >= lift1_maxPos && gamepad2.right_stick_y < 0) {
-                    lift1_power = 0;
-                } else {
-                    lift1_power = -gamepad2.right_stick_y;
-                }
 
                 // High arm power TODO add limiter?
                 lift2_power = -gamepad2.left_stick_y;
 
                 // SETTING POWERS
-                lift1.setPower(lift1_power * lift_speed_limit1);
-                lift2.setPower(lift2_power * lift_speed_limit2);
+
 
                 // FIELD CENTRIC CRAP
 

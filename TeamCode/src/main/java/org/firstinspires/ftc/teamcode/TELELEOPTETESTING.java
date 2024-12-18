@@ -1,4 +1,4 @@
-// THIS IS MARK 2 CODE
+// THIS IS MARK 3 CODE (Field Centric)
 
 package org.firstinspires.ftc.teamcode;
 
@@ -29,8 +29,14 @@ public class TELELEOPTETESTING extends LinearOpMode {
     // IMU
     private IMU imu;
 
-    // Lift Motors
+    // Lift Motor
     private DcMotor lift;
+
+    // Bucket Servo
+    private Servo bucket;
+
+    // Front Arm Motor
+    private DcMotor frontArm;
 
     // Grabber Servos
     private Servo grabber;
@@ -60,12 +66,19 @@ public class TELELEOPTETESTING extends LinearOpMode {
         // IMU
         imu = hardwareMap.get(IMU.class, "imu");
 
+        // FRONT ARM MOTOR
+        frontArm = hardwareMap.get(DcMotor.class, "frontArm");
+
         // Grabber Servos
         grabber = hardwareMap.get(Servo.class, "grabber");
 
         wrist = hardwareMap.get(Servo.class, "wrist");
 
         // Lift Motors
+        lift = hardwareMap.get(DcMotor.class, "lift");
+
+        // Bucket Servo
+        bucket = hardwareMap.get(Servo.class, "bucket");
 
         // Motor Init shenanigans
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -75,18 +88,26 @@ public class TELELEOPTETESTING extends LinearOpMode {
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 //        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        // TODO lift1 might be high joint and NOT low joint
+        frontArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        // TODO CHANGE THIS MAYBE
         // Lift stuff
-        double lift_speed_limit1 = .5; // lift1 is low arm joint
-        double lift_speed_limit2 = .1; // lift2 is high arm joint
+        double lift_speed_limit = .5;
 
-        double lift1_minPos = -320.0; // highest point (up on robot)
-        double lift1_maxPos = 10.0; // lowest point (fwd on robot)
+        // TODO CHANGE THIS CRAPADAP
+        double lift_minPos = -320.0; // highest point (up on robot)
+        double lift_maxPos = 10.0; // lowest point (fwd on robot)
 
-        double lift1_power;
-        double lift2_power;
+        double lift_power;
 
+        // Wrist stuff
+        double wrist_pos = -1;
 
         Speed_percentage = 0.6;
         yawAngle = 0;
@@ -139,10 +160,15 @@ public class TELELEOPTETESTING extends LinearOpMode {
                 telemetry.addData("Power of rightFront", rightFront.getPower());
 
                 // Lift telemetry
-
+                telemetry.addData("Power of lift", lift.getPower()); // positive power is up, negative power is down
+                telemetry.addData("Position of lift", lift.getCurrentPosition()); // highest pos should be 4400 or near that
 
                 // Grabber telemetry
                 telemetry.addData("Position of grabber", grabber.getPosition());
+                telemetry.addData("Position of wrist", wrist.getPosition());
+
+                // Bucket telemetry
+                telemetry.addData("Position of bucket", bucket.getPosition());
 
                 // ------------------------------ACTUAL MOVEMENT STUFF------------------------------
 
@@ -156,24 +182,55 @@ public class TELELEOPTETESTING extends LinearOpMode {
                 // GRABBER
                 // close grabber if either bumpers/ trigger is pressed
                 if (gamepad2.left_trigger >= .5 || gamepad2.right_trigger >= .5 || gamepad2.left_bumper || gamepad2.right_bumper) {
-                    grabber.setPosition(0.3675);
+                    grabber.setPosition(.9);
                     telemetry.addData("Grabber status", "closed");
                 } else { // open grabber when bumpers/ triggers are not pressed
-                    grabber.setPosition(0.2);
+                    grabber.setPosition(.65);
                     telemetry.addData("Grabber status", "open");
                 }
 
                 // WRIST
                 if (gamepad2.a) {
-                    grabber.setPosition(0);
+                    wrist_pos = .9; // sub - A
                 } else if (gamepad2.b) {
-                    grabber.setPosition(1);
+                    wrist_pos = .75; // ground - B
                 } else if (gamepad2.x) {
-                    grabber.setPosition(0.5);
+                    wrist_pos = .6; // bucket - X
+                }
+
+                // normalization
+                if (wrist_pos != -1) {
+                    if (gamepad2.dpad_down) {
+                        wrist_pos += .1;
+                    } else if (gamepad2.dpad_up) {
+                        wrist_pos -= .1;
+                    }
+
+                    if (wrist_pos > 1) {
+                        wrist_pos = 1;
+                    } else if (wrist_pos < 0) {
+                        wrist_pos = 0;
+                    }
+                    wrist.setPosition(wrist_pos);
                 }
 
 
+                // BUCKET CRAP
+                if (gamepad2.y) {
+                    bucket.setPosition(0); // flipped backward
+                } else if (gamepad2.dpad_left) {
+                    bucket.setPosition(0.6); // old norm
+                } else {
+                    bucket.setPosition(0.7);// test/new norm
+                }
+
                 // LIFT CRAP
+                // TODO Add limiter?
+                lift.setPower(-gamepad2.right_stick_y); // speed limit used to be .7
+
+                // FRONT ARM CRAP
+                frontArm.setPower(gamepad2.left_stick_y * .5); // speed limit used to be .7
+
 
                 // FIELD CENTRIC CRAP
 
