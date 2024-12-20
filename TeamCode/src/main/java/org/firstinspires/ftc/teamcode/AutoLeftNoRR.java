@@ -4,6 +4,9 @@ package org.firstinspires.ftc.teamcode;
 
 import static java.lang.Math.PI;
 
+import javax.management.DynamicMBean;
+import javax.naming.directory.DirContext;
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -113,7 +116,7 @@ public class AutoLeftNoRR extends LinearOpMode {
         double wrist_pos = -1;
 
         Speed_percentage = 0.6;
-        yawAngle = 0;
+        yawAngle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         // Initialize the IMU.
         // Initialize the IMU with non-default settings. To use this block,
         // plug one of the "new IMU.Parameters" blocks into the parameters socket.
@@ -143,16 +146,11 @@ public class AutoLeftNoRR extends LinearOpMode {
             LOWER_LIFT();
 //            CLOSE_GRABBER();
             sleep(10);
-            MOVE_BACKWARD(650);
-            STRAFE_RIGHT(2400);
-            TURN_LEFT(1800);
-            MOVE_FORWARD(800);
-            MOVE_BACKWARD(20);
-            RAISE_LIFT_CUSTOM(1000);
-            FLIP_BUCKET();
-            RAISE_LIFT_CUSTOM(520);
+            // At this point, we have set the pre-loaded sample into the high basket.
+            STRAFE_RIGHT(400);
+            TURN_LEFT(90);
 
-//            MOVE_BACKWARD(5000); USE THIS IF PARKING IN OBSERVATION ZONE
+
 
         }
     }
@@ -244,9 +242,11 @@ public class AutoLeftNoRR extends LinearOpMode {
 
     /**
      * Turn right certain # of encoder clicks (in terms of front_left)
-     * @param distanceEncoders degrees to turn in terms of encoders
+     * @param degrees degrees to turn in degrees
      */
-    private void TURN_RIGHT(int distanceEncoders) {
+    private void TURN_RIGHT(int degrees) {
+        imu.resetYaw();
+        yawAngle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         sleep(200);
@@ -254,8 +254,9 @@ public class AutoLeftNoRR extends LinearOpMode {
         rightFront.setPower(-speed);
         leftBack.setPower(speed);
         rightBack.setPower(-speed);
-        while (Math.abs(leftFront.getCurrentPosition()) < distanceEncoders) {
-            telemetry.addData("leftFront.getCurrentPosition()", leftFront.getCurrentPosition());
+        while (Math.abs(yawAngle) < degrees) {
+            yawAngle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+            telemetry.addData("yawAngle", yawAngle);
             telemetry.update();
         }
         STOP_ROBOT();
@@ -264,9 +265,11 @@ public class AutoLeftNoRR extends LinearOpMode {
 
     /**
      * Turn left certain # of encoder clicks (in terms of front_left)
-     * @param distanceEncoders distance to turn in terms of encoders
+     * @param degrees distance to turn in degrees
      */
-    private void TURN_LEFT(int distanceEncoders) {
+    private void TURN_LEFT(int degrees) {
+        imu.resetYaw()
+        yawAngle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         sleep(200);
@@ -274,8 +277,9 @@ public class AutoLeftNoRR extends LinearOpMode {
         rightFront.setPower(speed);
         leftBack.setPower(-speed);
         rightBack.setPower(speed);
-        while (Math.abs(leftFront.getCurrentPosition()) < distanceEncoders) {
-            telemetry.addData("leftFront.getCurrentPosition()", leftFront.getCurrentPosition());
+        while (Math.abs(yawAngle) < degrees) {
+            yawAngle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+            telemetry.addData("yawAngle", yawAngle);
             telemetry.update();
         }
         STOP_ROBOT();
@@ -374,6 +378,17 @@ public class AutoLeftNoRR extends LinearOpMode {
         telemetry.update();
     }
 
+    /**
+     * Puts lift pos to telemetry
+     * @param pos this should be lift.getCurrentPosition() in some form
+     */
+    private void FRONT_ARM_UPDATE(double pos) {
+        telemetry.addData("Front Arm Actual Pos: ", pos);
+        telemetry.update();
+    }
+
+
+
     private void FLIP_BUCKET() {
 
         bucket.setPosition(0);
@@ -387,5 +402,41 @@ public class AutoLeftNoRR extends LinearOpMode {
         telemetry.addData("Bucket Status: ", "normal");
         telemetry.update();
         sleep(1000);
+    }
+
+
+// TODO TEST THESE NUMBERS
+    private void RAISE_ARM() {
+        sleep(200);
+        if (frontArm.getCurrentPosition() > 4000) {
+            while (frontArm.getCurrentPosition() > 4000) {
+                frontArm.setPower(-0.5);
+                FRONT_ARM_UPDATE(frontArm.getCurrentPosition());
+            }
+            frontArm.setPower(0);
+        } else if (frontArm.getCurrentPosition() < 4000) {
+            while (frontArm.getCurrentPosition() < 4000) {
+                frontArm.setPower(0.5);
+                FRONT_ARM_UPDATE(frontArm.getCurrentPosition());
+            }
+            frontArm.setPower(0);
+        }
+    }
+
+    private void LOWER_ARM() {
+        sleep(200);
+        if (frontArm.getCurrentPosition() > 4000) {
+            while (frontArm.getCurrentPosition() > 4000) {
+                frontArm.setPower(-0.5);
+                FRONT_ARM_UPDATE(frontArm.getCurrentPosition());
+            }
+            frontArm.setPower(0);
+        } else if (frontArm.getCurrentPosition() < 4000) {
+            while (frontArm.getCurrentPosition() < 4000) {
+                frontArm.setPower(0.5);
+                FRONT_ARM_UPDATE(frontArm.getCurrentPosition());
+            }
+            frontArm.setPower(0);
+        }
     }
 }
